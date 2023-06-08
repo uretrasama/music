@@ -17,10 +17,13 @@ type model struct {
 	table table.Model
 }
 
-func (m model) Init() tea.Cmd { return nil }
+func (m model) Init() tea.Cmd {
+	return nil
+}
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -38,7 +41,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			)
 		}
 	}
+
 	m.table, cmd = m.table.Update(msg)
+
 	return m, cmd
 }
 
@@ -51,7 +56,7 @@ func main() {
 		{Title: "Rank", Width: 4},
 		{Title: "City", Width: 10},
 		{Title: "Country", Width: 10},
-		{Title: "Population", Width: 10},
+		{Title: "Population", Width: 21},
 	}
 
 	rows := []table.Row{
@@ -165,19 +170,23 @@ func main() {
 	)
 
 	s := table.DefaultStyles()
+
 	s.Header = s.Header.
-		BorderStyle(lipgloss.NormalBorder()).
+		BorderStyle(lipgloss.DoubleBorder()).
 		BorderForeground(lipgloss.Color("240")).
 		BorderBottom(true).
 		Bold(false)
+
 	s.Selected = s.Selected.
 		Foreground(lipgloss.Color("229")).
 		Background(lipgloss.Color("57")).
 		Bold(false)
+
 	t.SetStyles(s)
 
 	m := model{t}
-	if _, err := tea.NewProgram(m).Run(); err != nil {
+
+	if _, err := tea.NewProgram(m, tea.WithAltScreen()).Run(); err != nil {
 		fmt.Println("Error running program:", err)
 		os.Exit(1)
 	}
