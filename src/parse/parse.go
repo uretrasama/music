@@ -30,3 +30,13 @@ func ParseToSlice() {
 	}
 	config.FileNames = ParseFileNames(dir)
 }
+
+func MaxLenght(files []string) int {
+	max := 0
+	for _, file := range files {
+		if len(file) > max {
+			max = len(file)
+		}
+	}
+	return max
+}

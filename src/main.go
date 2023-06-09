@@ -16,7 +16,7 @@ func main() {
 	parse.ParseToSlice()
 
 	colums := []table.Column{
-		{Title: "", Width: 70},
+		{Width: parse.MaxLenght(config.FileNames)},
 	}
 
 	rows := []table.Row{}
@@ -34,11 +34,6 @@ func main() {
 
 	s := table.DefaultStyles()
 
-	s.Header = s.Header.
-		BorderStyle(lipgloss.NormalBorder()).
-		BorderForeground(lipgloss.Color("240")).
-		BorderBottom(true).
-		Bold(false)
 	s.Selected = s.Selected.
 		Foreground(lipgloss.Color("229")).
 		Background(lipgloss.Color("57")).
@@ -46,7 +41,7 @@ func main() {
 
 	t.SetStyles(s)
 
-	if err := tea.NewProgram(&Model{t, 0}, tea.WithAltScreen()).Start(); err != nil {
+	if err := tea.NewProgram(&Model{t}, tea.WithAltScreen()).Start(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
@@ -54,7 +49,6 @@ func main() {
 
 type Model struct {
 	table table.Model
-	count int
 }
 
 func (m *Model) Init() tea.Cmd {
@@ -68,18 +62,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return m, tea.Quit
-		case "up", "j":
-			if m.count == (len(config.FileNames) - 1) {
-				break
-			} else {
-				m.count++
-			}
-		case "down", "k":
-			if m.count <= 0 {
-				break
-			} else {
-				m.count--
-			}
 		}
 	}
 
