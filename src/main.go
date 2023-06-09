@@ -52,13 +52,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "up", "j":
 			if m.count == (len(fileNames) - 1) {
-				m.count = m.count
+				break
 			} else {
 				m.count++
 			}
 		case "down", "k":
 			if m.count <= 0 {
-				m.count = m.count
+				break
 			} else {
 				m.count--
 			}
