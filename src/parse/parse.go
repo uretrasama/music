@@ -10,7 +10,9 @@ func ParseFileNames(dir []os.DirEntry) []string {
 	fileNames := []string{}
 
 	for _, file := range dir {
-		fileNames = append(fileNames, file.Name())
+		if (string(rune(file.Name()[len(file.Name())-3])) + string(rune(file.Name()[len(file.Name())-2])) + string(rune(file.Name()[len(file.Name())-1]))) == "mp3" {
+			fileNames = append(fileNames, file.Name())
+		}
 	}
 
 	return fileNames
