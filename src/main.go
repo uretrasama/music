@@ -1,42 +1,59 @@
 package main
 
 import (
+	"./config"
 	"./parse"
 	"fmt"
 	"os"
+	"regexp"
 
+	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
-)
-
-var (
-	path      string
-	fileNames []string
+	"github.com/charmbracelet/lipgloss"
 )
 
 func main() {
-	if len(os.Args) == 1 {
-		path = "."
-	} else {
-		path = os.Args[1]
+	parse.ParseToSlice()
+
+	colums := []table.Column{
+		{Title: "", Width: 70},
 	}
 
-	dir, errf := os.ReadDir(path)
+	rows := []table.Row{}
 
-	if errf != nil {
-		fmt.Println(errf)
-		os.Exit(1)
+	a := regexp.MustCompile("")
+	for _, file := range config.FileNames {
+		rows = append(rows, a.Split(file, 1))
 	}
 
-	fileNames = parse.ParseFileNames(dir)
+	t := table.New(
+		table.WithColumns(colums),
+		table.WithRows(rows),
+		table.WithFocused(true),
+	)
 
-	err := tea.NewProgram(&Model{}, tea.WithAltScreen()).Start()
-	if err != nil {
+	s := table.DefaultStyles()
+
+	s.Header = s.Header.
+		BorderStyle(lipgloss.NormalBorder()).
+		BorderForeground(lipgloss.Color("240")).
+		BorderBottom(true).
+		Bold(false)
+	s.Selected = s.Selected.
+		Foreground(lipgloss.Color("229")).
+		Background(lipgloss.Color("57")).
+		Bold(false)
+
+	t.SetStyles(s)
+
+	if err := tea.NewProgram(&Model{t, 0}, tea.WithAltScreen()).Start(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 }
 
 type Model struct {
+	table table.Model
 	count int
 }
 
@@ -45,13 +62,14 @@ func (m *Model) Init() tea.Cmd {
 }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "up", "j":
-			if m.count == (len(fileNames) - 1) {
+			if m.count == (len(config.FileNames) - 1) {
 				break
 			} else {
 				m.count++
@@ -65,9 +83,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	return m, nil
+	m.table, cmd = m.table.Update(msg)
+
+	return m, cmd
 }
 
 func (m *Model) View() string {
-	return fmt.Sprintf("%s    %d ", fileNames[m.count], m.count)
+	return config.BaseStyle.Render(m.table.View() + "\n")
 }
