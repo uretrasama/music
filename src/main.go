@@ -1,24 +1,33 @@
 package main
 
 import (
+	"./parse"
 	"fmt"
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+var (
+	path      string
+	fileNames []string
+)
+
 func main() {
-	dir, errf := os.ReadDir(os.Args[1])
-	fileNames := []string{}
+	if len(os.Args) == 1 {
+		path = "."
+	} else {
+		path = os.Args[1]
+	}
+
+	dir, errf := os.ReadDir(path)
 
 	if errf != nil {
 		fmt.Println(errf)
 		os.Exit(1)
 	}
 
-	for _, file := range dir {
-		fileNames = append(fileNames, file.Name())
-	}
+	fileNames = parse.ParseFileNames(dir)
 
 	err := tea.NewProgram(&Model{}, tea.WithAltScreen()).Start()
 	if err != nil {
@@ -41,10 +50,18 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return m, tea.Quit
-		case "up", "k":
-			m.count++
-		case "down", "j":
-			m.count--
+		case "up", "j":
+			if m.count == (len(fileNames) - 1) {
+				m.count = m.count
+			} else {
+				m.count++
+			}
+		case "down", "k":
+			if m.count <= 0 {
+				m.count = m.count
+			} else {
+				m.count--
+			}
 		}
 	}
 
@@ -52,5 +69,5 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *Model) View() string {
-	return fmt.Sprintf("count: %d\n\n up\tdown", m.count)
+	return fmt.Sprintf("%s    %d ", fileNames[m.count], m.count)
 }
