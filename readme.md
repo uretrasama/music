@@ -10,4 +10,4 @@ uretrasama@10.06.2023 - 1.0.0 version.: u can choose the .mp3 file and playing i
 
 #
 
-version - 0.1.0
+version - 1.1.0

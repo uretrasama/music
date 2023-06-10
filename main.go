@@ -99,6 +99,7 @@ func (m model) View() string {
 
 func playmp3(name string) error {
 	isKill = false
+	IsPause = false
 	f, err := os.Open(name)
 	if err != nil {
 		return err
@@ -129,6 +130,9 @@ func playmp3(name string) error {
 			p.Pause()
 		} else {
 			p.Play()
+			if !p.IsPlaying() {
+				break
+			}
 		}
 		if isKill {
 			break
