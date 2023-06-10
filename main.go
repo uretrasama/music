@@ -16,6 +16,7 @@ import (
 var (
 	Volume  = float64(0.015)
 	IsPause = false
+	isKill  = false
 )
 
 type model struct {
@@ -61,6 +62,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// Did the user select a file?
 	if didSelect, path := m.filepicker.DidSelectFile(msg); didSelect {
 		// Get the path of the selected file.
+		isKill = true
 		go playmp3(path)
 		m.selectedFile = path
 	}
@@ -91,11 +93,12 @@ func (m model) View() string {
 		s.WriteString("Selected file: " + m.filepicker.Styles.Selected.Render(m.selectedFile))
 	}
 	s.WriteString("\n\n" + m.filepicker.View() + "\n")
-	s.WriteString(fmt.Sprintf("Volume - %d", int(Volume*1000)))
+	s.WriteString(fmt.Sprintf("Volume - %d", int(Volume*1000)) + "\n")
 	return s.String()
 }
 
 func playmp3(name string) error {
+	isKill = false
 	f, err := os.Open(name)
 	if err != nil {
 		return err
@@ -118,13 +121,16 @@ func playmp3(name string) error {
 	p.Play()
 	p.SetVolume(Volume)
 
+	fmt.Printf("Length : %d", d.Length())
 	for {
 		time.Sleep(time.Nanosecond)
 		p.SetVolume(Volume)
 		if IsPause {
 			p.Pause()
+		} else {
+			p.Play()
 		}
-		if !p.IsPlaying() {
+		if isKill {
 			break
 		}
 	}
